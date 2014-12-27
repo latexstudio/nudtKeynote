@@ -1,0 +1,231 @@
+%!TEX root = myppt.tex
+
+
+\renewcommand{\tabularxcolumn}[1]{m{#1}}
+
+\begin{frame}{第x讲：系统虚拟机}
+  \begin{block}{目的与要求}
+    \begin{itemize}
+      \item 了解系统虚拟机的定义
+      \item 了解系统虚拟机的分类
+      \item 了解Intel-VT 硬件辅助虚拟化技术
+      \item 学习一种虚拟机软件
+    \end{itemize}
+  \end{block}
+  \begin{block}{重点与难点}
+    \begin{itemize}
+      \item CPU 的虚拟化
+      \item 内存的虚拟化
+      \item I/O 的虚拟化
+    \end{itemize}
+  \end{block}
+\end{frame}
+\section{基本概念}
+\begin{frame}\frametitle{为何要虚拟化}
+    \emph{解决软件的兼容性和运行性能的问题}
+\begin{table}
+
+\begin{tabularx}{\linewidth}{XXXX}
+\hline
+\rowcolor{AMUYellow!30} {\hei 虚拟化级别} & {\hei 软件}&{\hei 兼容性}&{\hei 性能}\\\hline
+\rowcolor{AMUDarkBlue!30} 应用程序 & Java虚拟机 & \ding{72}\ding{72}\ding{73}& \ding{72}\ding{72}\ding{73}\\
+\rowcolor{AMUDarkBlue!15} 函数库 & Wine &\ding{72}\ding{72}\ding{73}  & \ding{72}\ding{72}\ding{73} \\
+\rowcolor{AMUDarkBlue!30} 操作系统 & 容器 &\ding{72}\ding{73}\ding{73} & \ding{72}\ding{72}\ding{72} \\
+\rowcolor{AMUDarkBlue!15} 硬件 & 系统虚拟机& \ding{72}\ding{72}\ding{72} & \ding{72}\ding{72}\ding{73}\\
+\rowcolor{AMUDarkBlue!30} 指令 & 指令模拟器 &\ding{72}\ding{72}\ding{72} & \ding{73}\ding{73}\ding{73}\\\hline
+\end{tabularx}
+\end{table}
+
+\end{frame}
+\begin{frame}\frametitle{系统虚拟机的发展历程}
+  \begin{description}
+    \item[1998 年] VMware 公司成立，实现了在操作系统上运行操作系统
+    \item[1999 年] Xen 进入开发阶段，虚拟机系统开源
+    \item[2006 年] Intel 开发了硬件辅助虚拟化技术VT
+    \item[2007 年] 基于硬件辅助虚拟化的虚拟机KVM 进入Linux 内核
+    \item[2010 年] OpenStack 项目开源，虚拟机进入云时代
+  \end{description}
+\end{frame}
+
+\begin{frame}[c]\frametitle{虚拟机的应用场景}
+
+\small
+
+\begin{tikzpicture}[align=center,every node/.style={AMUDarkBlue,circle,fill=AMUDarkBlue!30,draw=AMUDarkBlue!70!black,fill opacity=0.6}]
+  \node (1) at (0,0) {调试操作\\ 系统内核};
+  \node (2) at (2,3){集中化应用};
+  \node (3) at (4,0){服务器\\ 云端托管};
+  \node (4) at (6,3){系统容错};
+  \node (5) at (8,0){分布式系统\\ 的快速部署};
+
+\foreach \x/\y in {1/2,2/3,3/4,4/5}
+ \path[draw,->] (\x)--(\y);
+%\path[draw,->] (1)--(2);
+
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{系统虚拟机的基本概念}
+\begin{block}{Hypervisor（系统管理程序）}
+  \begin{itemize}
+    \item  又称为虚拟机监管器（virtual machine monitor，VMM）
+  \end{itemize}
+\end{block}
+
+\begin{block}{主机（Host）}
+  \begin{itemize}
+    \item  运行Hypervisor的物理机
+  \end{itemize}
+\end{block}
+
+\begin{block}{客户机（Guest）}
+  \begin{itemize}
+    \item  又称为虚拟机（virtual machine，VM）
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{分类：按驱动类型分}
+\begin{columns}[onlytextwidth]
+\begin{column}{0.45\textwidth}
+  \begin{block}{全虚拟化}
+   \begin{itemize}
+    \item 操作系统可以不经过修改直接在虚拟机上运行
+   \end{itemize}
+  \end{block}
+    \begin{block}{半虚拟化}
+       \begin{itemize}
+    \item 需要修改操作系统的部分代码才可以运行
+    \item 提高运行效率，提供特殊功能
+   \end{itemize}
+  \end{block}
+\end{column}
+\begin{column}{0.55\textwidth}
+\centering
+\small
+\begin{tikzpicture}[align=center]
+\draw (0,0) rectangle+(160pt,100pt);
+\node at (80pt,10pt) {Host};
+\node[draw,text width=140](vdev) at (80pt, 30pt ){虚拟设备};
+\node[draw,text width=50](parab) at (120pt, 80pt ){半虚拟化\\ 后端驱动};
+
+\draw (0,120pt) rectangle+(160pt,60pt);
+\node at (80pt,170pt){客户机};
+\node[draw,text width=50](driver) at (40pt, 140pt ){普通驱动};
+\node[draw,text width=50] (parad)at (120pt, 140pt ){半虚拟化\\ 前端驱动};
+
+\path[line width=6pt,-{Stealth[length=12pt,width=12pt]},draw] (driver)--(40pt,40pt);
+\path[line width=6pt,-{Stealth[length=12pt,width=12pt]},draw] (parad)--(parab);
+\path[line width=6pt,-{Stealth[length=12pt,width=12pt]},draw] (parab)--(120pt,40pt);
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame} 
+\section{虚拟机的分类}
+\begin{frame}{分类：安装方式}
+\begin{columns}[onlytextwidth]
+\begin{column}{0.45\textwidth}
+  \begin{block}{Hypervisor模型}
+   \begin{itemize}
+    \item 在物理机上直接安装VMM
+    \item VMM需要提供完整的系统管理方案
+   \end{itemize}
+  \end{block}
+    \begin{block}{宿主机模型}
+       \begin{itemize}
+    \item 在物理机操作系统之上安装VMM
+    \item 利用操作系统的部分管理机制
+   \end{itemize}
+  \end{block}
+\end{column}
+\begin{column}{0.55\textwidth}
+\footnotesize
+\centering
+\begin{tikzpicture}[align=center]
+\draw (0,0) rectangle+(160pt,50pt);
+\node at (80pt,10pt){宿主机操作系统};
+\node[draw,text width=120] (parad)at (80pt, 30pt ){虚拟机内核管理模块};
+\draw (0,50pt) rectangle+(50pt,20pt);
+\node at (25pt,60pt){客户机};
+\draw (110pt,50pt) rectangle+(50pt,20pt);
+\node at (135pt,60pt){应用程序};
+
+\draw(0,80pt) rectangle+(160pt,60pt);
+\node at (80pt,90pt){Hypervisor};
+\node [draw] at (40pt,110pt){处理器管理};
+\node [draw] at (120pt,110pt){内存管理};
+\node [draw] at (40pt,130pt){设备模型};
+\node [draw] at (120pt,130pt){设备驱动};
+\draw (10pt,140pt) rectangle+(50pt,20pt);
+\node at (35pt,150pt){客户机};
+\draw (100pt,140pt) rectangle+(50pt,20pt);
+\node at (125pt,150pt){客户机};
+
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame} 
+
+\begin{frame}{分类：按照应用类型}
+    \begin{block}{服务器虚拟化}
+   \begin{itemize}
+    \item 虚拟机上运行的系统是为了外界提供服务
+    \item 例：通过虚拟机为外界提供Web服务（AWS，阿里云）
+   \end{itemize}
+  \end{block}
+    \begin{block}{桌面虚拟化}
+       \begin{itemize}
+    \item 虚拟机上运行的系统提供给终端用户使用
+    \item 例：企业内部的远程办公系统、远程调试系统等（VMware，Citrix）
+   \end{itemize}
+  \end{block}
+\end{frame}
+\section{虚拟机的基本原理}
+\begin{frame}{操作系统的硬件保护机制（P231）}
+    \begin{block}{用户态（Ring4）}
+   \begin{itemize}
+    \item 执行非特权指令，如访问虚拟内存、运算等
+   \end{itemize}
+  \end{block}
+    \begin{block}{内核态}
+       \begin{itemize}
+    \item 执行所有指令，包括I/O指令，电源管理指令等
+   \end{itemize}
+  \end{block}
+      \begin{block}{调用方式}
+       \begin{itemize}
+    \item 用户态对特权指令的使用必须通过系统调用实现
+   \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{虚拟化的三个问题}
+    \begin{block}{虚拟机的运行模式}
+   \begin{itemize}
+    \item 根模式和非根模式
+   \end{itemize}
+  \end{block}
+    \begin{block}{访存指令怎样执行}
+       \begin{itemize}
+    \item EPT页表
+   \end{itemize}
+  \end{block}
+      \begin{block}{访问I/O的指令怎样执行}
+       \begin{itemize}
+    \item 虚拟设备
+   \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{根模式和非根模式}
+\begin{tikzpicture}[align=center]
+  \node[draw,text width = 230pt] at (120pt,0){Ring3 主机用户态};
+  \node[draw,text width = 230pt] at (120pt,20pt){Ring0 主机核心态};
+  \node at (-25pt,20pt){根模式};
+ \path[line width=1pt,gray,draw] (-50pt,50pt)--(250pt,50pt);
+   \node at (-25pt,70pt){非根模式};
+   \node[draw,text width = 230pt] at (120pt,70pt){Ring0 客户机核心态};
+    \node[draw,text width = 230pt] at (120pt,90pt){Ring3 客户机用户态};
+
+\end{tikzpicture}
+\end{frame}

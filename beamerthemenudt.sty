@@ -1,0 +1,211 @@
+\ProvidesPackage{beamerthemenudt}[2014/09/01]
+\RequirePackage{fontspec}
+\RequirePackage{pifont}
+\RequirePackage{calc}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\RequirePackage{tabularx}
+\RequirePackage{subfig}
+\RequirePackage{pgfplots}
+\RequirePackage{pgf-umlsd}
+\RequirePackage{array}
+\usetikzlibrary{decorations.text}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{topaths}
+\usetikzlibrary{patterns}
+\usetikzlibrary{trees}
+
+\setsansfont{Times New Roman}
+\setmonofont{Monaco}
+\setmainfont{Optima LT Std}
+
+
+\RequirePackage{xeCJK}
+\RequirePackage{hyperref}
+\setCJKmainfont[BoldFont={Adobe Heiti Std},ItalicFont={Adobe Kaiti Std}]{Songti SC}
+  \setCJKsansfont{Songti SC}
+  \setCJKmonofont{Source Code CN}
+
+\setCJKfamilyfont{song}{Songti SC}
+  \setCJKfamilyfont{hei}{XHei}
+  \setCJKfamilyfont{fs}{Adobe Fangsong Std}
+  \setCJKfamilyfont{kai}{Adobe Kaiti Std}
+  \setCJKfamilyfont{li}{Adobe Heiti Std}
+  \setCJKfamilyfont{you}{Adobe Kaiti Std}
+  \setCJKfamilyfont{cusong}{Songti SC Bold}
+  \newcommand{\song}{\CJKfamily{song}}    % 宋体
+\newcommand{\fs}{\CJKfamily{fs}}        % 仿宋体
+\newcommand{\kai}{\CJKfamily{kai}}      % 楷体
+\newcommand{\hei}{\CJKfamily{hei}}      % 黑体
+\newcommand{\li}{\CJKfamily{li}}        % 隶书
+\newcommand{\you}{\CJKfamily{you}}      % 幼圆
+\newcommand{\cusong}{\CJKfamily{cusong}}
+
+
+\setbeamerfont{frametitle}{shape=\hei}
+
+\setbeamerfont{title}{shape=\kai}
+\RequirePackage{etoolbox}
+\mode<presentation>
+
+%%% variables and options
+\def\beamer@nudt@value@true{true}
+\def\beamer@nudt@value@false{false}
+\def\beamer@nudt@value@empty{}
+
+\def\beamer@nudt@url{}
+\def\beamer@nudt@numbering{}
+\def\beamer@nudt@titlepagelayout{}
+
+\newlength{\beamer@nudt@menuwidth}
+\newlength{\beamer@nudt@restofmenuwidth}
+
+\setlength{\beamer@nudt@menuwidth}{.3\paperwidth}
+
+\DeclareOptionBeamer{url}[{www.techfak.uni-nudt.de}]{\def\beamer@nudt@url{#1}}
+\DeclareOptionBeamer{numbering}[true]{\def\beamer@nudt@numbering{#1}}
+\DeclareOptionBeamer{titlepagelayout}[]{\def\beamer@nudt@titlepagelayout{#1}}
+\DeclareOptionBeamer{menuwidth}[]{\setlength{\beamer@nudt@menuwidth}{#1}}
+
+\ProcessOptionsBeamer
+
+\setlength{\beamer@nudt@restofmenuwidth}{0.95\paperwidth}
+\addtolength\beamer@nudt@restofmenuwidth{-\beamer@nudt@menuwidth}
+
+
+
+\setbeamercolor{block body}{bg=}
+
+\setbeamerfont{block title}{shape=\kai}
+\useinnertheme{circles}
+\useoutertheme[subsection=false]{miniframes}
+\usecolortheme{nudt}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{background canvas}[vertical shading][bottom=white,middle=white!15,top=gray!15]
+\renewcommand{\emph}[1]{\textcolor{structure}{\hei #1}}
+\setbeamerfont{headline}{shape=\cusong}
+\usepackage{hyperref} % this is of \href{}{} or \url{}
+\usepackage{booktabs} % this is for \midrule \toprule etc in tables
+
+
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcolumntype{Z}{>{\columncolor{red!30}\color{red!70!black}}Y}
+%\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\defbeamertemplate*{title page}{titlepage}
+{
+  \thispagestyle{empty}
+
+  \begin{picture}(0,0)(0,0)
+    \put(-29,-171){\includegraphics[width=1.01\paperwidth]{images/titlepage.pdf}}
+  \end{picture}
+
+  \begin{picture}(0,0)(0,0)
+    \put(10,0){
+        \begin{minipage}{0.9\linewidth}
+        \centering{\LARGE\color{nudtwhite} \cusong\inserttitle\par}
+        \vspace{5mm}
+        \centering{\large\color{nudtlightgrey} \insertsubtitle\par}
+        \end{minipage}
+    }
+  \end{picture}
+  \begin{picture}(0,0)(0,0)
+    \put(10,-65){
+        \begin{minipage}{0.90\linewidth}
+        \centering{\large\color{nudtwhite} \insertauthor\par}
+        \end{minipage}
+    }
+  \end{picture}
+  \begin{picture}(0,0)(0,0)
+    \put(10,-127){
+        \begin{minipage}{0.90\linewidth}
+        \centering{\color{nudtblue} \insertinstitute\par}
+        \end{minipage}
+    }
+  \end{picture}
+
+}
+
+% HEADER
+\defbeamertemplate*{headline}{nudt}%
+{
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=1em,sep=0.3em]{headerline title}
+    \begin{minipage}{\beamer@nudt@restofmenuwidth}
+        {\tiny{\bfseries NUDT} {\scshape Computer Science}}%
+    \end{minipage}
+    \hspace{0pt}
+    \begin{minipage}{\beamer@nudt@menuwidth}
+      \begin{flushright}
+	    \vspace{4pt}
+        \li \insertsectionnavigationhorizontal{\beamer@nudt@menuwidth}{}{}
+      \end{flushright}
+    \end{minipage}
+
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0.4pt]{headerline border}
+    \vspace{0.4pt}
+  \end{beamercolorbox}
+}
+
+\setbeamertemplate{headline}[nudt]
+
+% FOOTER
+\defbeamertemplate*{footline}{nudt}
+{
+%\leavevmode%
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=1em,sep=0.3em]{footerline}
+    \li \insertshorttitle\;--\;  \insertshortauthor \hfill %
+    \ifx\beamer@nudt@numbering\beamer@nudt@value@false\relax\else
+         \insertframenumber/\inserttotalframenumber %
+    \fi
+  \end{beamercolorbox}
+}
+
+% SECTION LIST
+\usesectionheadtemplate
+{ %active
+  \color{nudtlyellow} \insertsectionhead
+}
+{ %other
+  \color{nudtlightgrey} \insertsectionhead
+}
+% BACKGROUND IMAGE
+\setbeamertemplate{background}{
+  \ifnum\insertframenumber=1\else
+  \parbox[r][\paperheight]{\paperwidth}{
+    \vfill\hfill
+    \includegraphics[height=15pt]{images/nudt.pdf}\hspace{5pt}
+    \vspace{10pt}
+  }
+  \fi
+}
+
+
+\defbeamertemplate*{frametitle}{}
+{
+  \begin{beamercolorbox}[sep=0ex,ht= 2.5ex, wd=\paperwidth]{}
+    \hspace{2ex}\insertframetitle{} \hspace{1ex}\hrulefill %
+  \end{beamercolorbox}%
+}
+
+%
+\newcommand{\sectionframe}[1]
+{
+    \begin{beamercolorbox}[wd=\textwidth]{footerline}
+        \begin{minipage}{\textwidth}
+          \vspace{1em}
+          \centering\Large{\color{white}{#1}}
+          \vspace{1em}
+        \end{minipage}%
+    \end{beamercolorbox}%
+    \nointerlineskip
+    \begin{beamercolorbox}[sep=0pt,ht=2pt, wd=\textwidth]{headerline border}
+    \end{beamercolorbox}%
+}
+%\mode<handout>
+
+\mode
+<all>
